@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabaseClient'
-import { format, getDaysInMonth, startOfMonth, getDay } from 'date-fns'
+import { format, getDaysInMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 const COLOR_MAP = {
