@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabaseClient'
 import { format, getDaysInMonth } from 'date-fns'
-import { it } from 'date-fns/locale'
+import { it as itLocale } from 'date-fns/locale'
+import { enUS as enLocale } from 'date-fns/locale'
+import { useLang } from './i18n'
 
 const COLOR_MAP = {
   teal: '#1D9E75',
@@ -17,6 +19,7 @@ const MOOD_LABELS = ['😐', '🙁', '😊', '😄', '🤩']
 const MOTIVATION_LABELS = ['💤', '😴', '⚡', '🔥', '🚀']
 
 export default function Dashboard({ session }) {
+  const { lang, toggleLang, t } = useLang()
   const [habits, setHabits] = useState([])
   const [completions, setCompletions] = useState({})
   const [mentalState, setMentalState] = useState({})
@@ -28,6 +31,7 @@ export default function Dashboard({ session }) {
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState('')
 
+  const dateLocale = lang === 'it' ? itLocale : enLocale
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
   const daysInMonth = getDaysInMonth(currentDate)
@@ -160,15 +164,15 @@ export default function Dashboard({ session }) {
           </div>
           <div className="sidebar-user">
             <div className="user-avatar">{username ? username[0].toUpperCase() : '?'}</div>
-            <span className="user-name">{username || 'Utente'}</span>
+            <span className="user-name">{username || t('defaultUser')}</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
           {[
-            { id: 'tracker', icon: '▦', label: 'Tracker' },
-            { id: 'mental', icon: '◯', label: 'Mental State' },
-            { id: 'progress', icon: '↗', label: 'Progress' },
+            { id: 'tracker', icon: '▦', label: t('navTracker') },
+            { id: 'mental', icon: '◯', label: t('navMental') },
+            { id: 'progress', icon: '↗', label: t('navProgress') },
           ].map(item => (
             <button
               key={item.id}
@@ -181,9 +185,14 @@ export default function Dashboard({ session }) {
           ))}
         </nav>
 
-        <button className="logout-btn" onClick={() => supabase.auth.signOut()}>
-          Esci
-        </button>
+        <div className="sidebar-bottom">
+          <button className="lang-toggle" onClick={toggleLang}>
+            {lang === 'it' ? 'EN' : 'IT'}
+          </button>
+          <button className="logout-btn" onClick={() => supabase.auth.signOut()}>
+            {t('logout')}
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
@@ -193,18 +202,18 @@ export default function Dashboard({ session }) {
           <div className="month-nav">
             <button className="month-btn" onClick={prevMonth}>←</button>
             <h2 className="month-title">
-              {format(currentDate, 'MMMM yyyy', { locale: it })}
+              {format(currentDate, 'MMMM yyyy', { locale: dateLocale })}
             </h2>
             <button className="month-btn" onClick={nextMonth}>→</button>
           </div>
           <div className="header-stats">
             <div className="stat-pill">
               <span className="stat-num">{habits.length}</span>
-              <span className="stat-lbl">abitudini</span>
+              <span className="stat-lbl">{t('habits')}</span>
             </div>
             <div className="stat-pill">
               <span className="stat-num">{getTotalCompleted()}</span>
-              <span className="stat-lbl">completati</span>
+              <span className="stat-lbl">{t('completed')}</span>
             </div>
           </div>
         </div>
@@ -218,7 +227,7 @@ export default function Dashboard({ session }) {
               <div className="habit-grid">
                 {/* Header row */}
                 <div className="grid-habit-col">
-                  <span className="grid-header">Abitudine</span>
+                  <span className="grid-header">{t('habitHeader')}</span>
                 </div>
                 <div className="grid-days-row">
                   {days.map(d => {
@@ -245,7 +254,7 @@ export default function Dashboard({ session }) {
                       <button
                         className="delete-habit-btn"
                         onClick={() => deleteHabit(habit.id)}
-                        title="Elimina"
+                        title={t('delete')}
                       >×</button>
                     </div>
                     <div className="habit-cells-row">
@@ -277,7 +286,7 @@ export default function Dashboard({ session }) {
                     <input
                       autoFocus
                       className="add-habit-input"
-                      placeholder="Nome abitudine..."
+                      placeholder={t('habitPlaceholder')}
                       value={newHabitName}
                       onChange={e => setNewHabitName(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addHabit()}
@@ -293,13 +302,13 @@ export default function Dashboard({ session }) {
                       ))}
                     </div>
                     <div className="add-habit-actions">
-                      <button className="confirm-btn" onClick={addHabit}>Aggiungi</button>
-                      <button className="cancel-btn" onClick={() => setShowAddHabit(false)}>Annulla</button>
+                      <button className="confirm-btn" onClick={addHabit}>{t('add')}</button>
+                      <button className="cancel-btn" onClick={() => setShowAddHabit(false)}>{t('cancel')}</button>
                     </div>
                   </div>
                 ) : (
                   <button className="add-habit-trigger" onClick={() => setShowAddHabit(true)}>
-                    + Nuova abitudine
+                    {t('newHabit')}
                   </button>
                 )}
               </div>
@@ -311,10 +320,10 @@ export default function Dashboard({ session }) {
         {!loading && activeTab === 'mental' && (
           <div className="mental-section">
             <div className="mental-today">
-              <h3 className="section-title">Come stai oggi?</h3>
+              <h3 className="section-title">{t('howAreYou')}</h3>
               <div className="mental-today-card">
                 <div className="mental-field">
-                  <span className="mental-label">Umore</span>
+                  <span className="mental-label">{t('mood')}</span>
                   <div className="emoji-scale">
                     {MOOD_LABELS.map((emoji, i) => (
                       <button
@@ -328,7 +337,7 @@ export default function Dashboard({ session }) {
                   </div>
                 </div>
                 <div className="mental-field">
-                  <span className="mental-label">Motivazione</span>
+                  <span className="mental-label">{t('motivation')}</span>
                   <div className="emoji-scale">
                     {MOTIVATION_LABELS.map((emoji, i) => (
                       <button
@@ -342,10 +351,10 @@ export default function Dashboard({ session }) {
                   </div>
                 </div>
                 <div className="mental-field">
-                  <span className="mental-label">Note libere</span>
+                  <span className="mental-label">{t('freeNotes')}</span>
                   <textarea
                     className="mental-note"
-                    placeholder="Come è andata oggi?"
+                    placeholder={t('notePlaceholder')}
                     value={todayMentalState?.note || ''}
                     onChange={e => saveMentalState(todayStr, 'note', e.target.value)}
                     rows={3}
@@ -355,7 +364,7 @@ export default function Dashboard({ session }) {
             </div>
 
             <div className="mental-history">
-              <h3 className="section-title">Questo mese</h3>
+              <h3 className="section-title">{t('thisMonth')}</h3>
               <div className="mental-calendar">
                 {days.map(d => {
                   const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -386,7 +395,7 @@ export default function Dashboard({ session }) {
         {/* PROGRESS TAB */}
         {!loading && activeTab === 'progress' && (
           <div className="progress-section">
-            <h3 className="section-title">Avanzamento abitudini</h3>
+            <h3 className="section-title">{t('habitProgress')}</h3>
             <div className="progress-list">
               {habits.map(habit => {
                 const count = getHabitCount(habit.id)
@@ -407,7 +416,7 @@ export default function Dashboard({ session }) {
                         style={{ width: `${pct}%`, background: color }}
                       />
                     </div>
-                    <div className="progress-count">{count} / {daysInMonth} giorni</div>
+                    <div className="progress-count">{count} / {daysInMonth} {t('days')}</div>
                   </div>
                 )
               })}
@@ -416,7 +425,7 @@ export default function Dashboard({ session }) {
             <div className="progress-summary">
               <div className="summary-card">
                 <span className="summary-num">{getTotalCompleted()}</span>
-                <span className="summary-lbl">completamenti totali</span>
+                <span className="summary-lbl">{t('totalCompletions')}</span>
               </div>
               <div className="summary-card">
                 <span className="summary-num">
@@ -424,13 +433,13 @@ export default function Dashboard({ session }) {
                     ? Math.round((getTotalCompleted() / (habits.length * daysInMonth)) * 100)
                     : 0}%
                 </span>
-                <span className="summary-lbl">tasso globale</span>
+                <span className="summary-lbl">{t('globalRate')}</span>
               </div>
               <div className="summary-card">
                 <span className="summary-num">
                   {habits.filter(h => getHabitCount(h.id) > 0).length}
                 </span>
-                <span className="summary-lbl">abitudini attive</span>
+                <span className="summary-lbl">{t('activeHabits')}</span>
               </div>
             </div>
           </div>

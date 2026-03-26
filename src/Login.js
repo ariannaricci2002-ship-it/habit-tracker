@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
+import { useLang } from './i18n'
 
 export default function Login() {
+  const { lang, toggleLang, t } = useLang()
   const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,7 +37,7 @@ export default function Login() {
       if (data.user) {
         await supabase.from('profiles').upsert({ id: data.user.id, username })
       }
-      setSuccess('Account creato! Controlla la tua email per confermare.')
+      setSuccess(t('signupSuccess'))
     }
     setLoading(false)
   }
@@ -48,7 +50,7 @@ export default function Login() {
           <span className="brand-name">Mindset Stack</span>
         </div>
         <div className="login-tagline">
-          <h1>Le tue abitudini.<br />Il tuo ritmo.<br />La tua versione migliore.</h1>
+          <h1>{t('tagline1')}<br />{t('tagline2')}<br />{t('tagline3')}</h1>
         </div>
         <div className="login-decoration">
           {Array.from({ length: 9 }).map((_, i) => (
@@ -59,29 +61,34 @@ export default function Login() {
 
       <div className="login-right">
         <div className="login-form-wrapper">
-          <div className="login-tabs">
-            <button
-              className={`tab-btn ${mode === 'login' ? 'active' : ''}`}
-              onClick={() => { setMode('login'); setError(''); setSuccess('') }}
-            >
-              Accedi
-            </button>
-            <button
-              className={`tab-btn ${mode === 'signup' ? 'active' : ''}`}
-              onClick={() => { setMode('signup'); setError(''); setSuccess('') }}
-            >
-              Registrati
+          <div className="login-top-bar">
+            <div className="login-tabs">
+              <button
+                className={`tab-btn ${mode === 'login' ? 'active' : ''}`}
+                onClick={() => { setMode('login'); setError(''); setSuccess('') }}
+              >
+                {t('loginTab')}
+              </button>
+              <button
+                className={`tab-btn ${mode === 'signup' ? 'active' : ''}`}
+                onClick={() => { setMode('signup'); setError(''); setSuccess('') }}
+              >
+                {t('signupTab')}
+              </button>
+            </div>
+            <button className="lang-toggle" onClick={toggleLang}>
+              {lang === 'it' ? 'EN' : 'IT'}
             </button>
           </div>
 
           <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="login-form">
             {mode === 'signup' && (
               <div className="field-group">
-                <label className="field-label">Username</label>
+                <label className="field-label">{t('username')}</label>
                 <input
                   type="text"
                   className="field-input"
-                  placeholder="il_tuo_nome"
+                  placeholder={t('usernamePlaceholder')}
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   required
@@ -90,11 +97,11 @@ export default function Login() {
             )}
 
             <div className="field-group">
-              <label className="field-label">Email</label>
+              <label className="field-label">{t('email')}</label>
               <input
                 type="email"
                 className="field-input"
-                placeholder="nome@email.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -102,7 +109,7 @@ export default function Login() {
             </div>
 
             <div className="field-group">
-              <label className="field-label">Password</label>
+              <label className="field-label">{t('password')}</label>
               <input
                 type="password"
                 className="field-input"
@@ -118,7 +125,7 @@ export default function Login() {
             {success && <p className="success-msg">{success}</p>}
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? '...' : mode === 'login' ? 'Entra' : 'Crea account'}
+              {loading ? '...' : mode === 'login' ? t('loginBtn') : t('signupBtn')}
             </button>
           </form>
         </div>

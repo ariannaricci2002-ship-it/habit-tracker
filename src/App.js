@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import { LangProvider } from './i18n'
 import Login from './Login'
 import Dashboard from './Dashboard'
 import './App.css'
@@ -30,12 +31,14 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      {!session ? (
-        <Login />
-      ) : (
-        <Dashboard session={session} />
-      )}
-    </div>
+    <LangProvider>
+      <div className="app">
+        {!session ? (
+          <Login />
+        ) : (
+          <Dashboard session={session} />
+        )}
+      </div>
+    </LangProvider>
   )
 }
